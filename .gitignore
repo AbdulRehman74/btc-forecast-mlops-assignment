@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+.env
+data/raw/*.csv
+data/processed/*.csv
+models/*.joblib
+models/*.json
+airflow/logs/
+report/evidence/*
+!report/evidence/.gitkeep
+tools/
+

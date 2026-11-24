@@ -1,0 +1,80 @@
+x-airflow-common: &airflow-common
+  image: apache/airflow:2.10.4-python3.10
+  environment: &airflow-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__WEBSERVER__SECRET_KEY: btc-forecast-development-key
+    PYTHONPATH: /opt/airflow/project
+    BTC_DATA_PATH: /opt/airflow/project/data/raw/btc_usd_daily.csv
+    BTC_MODEL_PATH: /opt/airflow/project/models/btc_forecast.joblib
+    API_RELOAD_URL: http://api:5000/internal/reload
+    MODEL_RELOAD_TOKEN: local-development-token
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./src:/opt/airflow/project/src
+    - ./data:/opt/airflow/project/data
+    - ./models:/opt/airflow/project/models
+    - airflow-logs:/opt/airflow/logs
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  airflow-init:
+    <<: *airflow-common
+    command: >
+      bash -c "pip install --no-cache-dir yfinance==0.2.66 scikit-learn==1.7.2 joblib==1.5.2 requests==2.32.4 'cffi<2' 'cloudpickle<=2.2.1' &&
+      airflow db migrate && airflow users create --username admin --password admin
+      --firstname Abdul --lastname Rehman --role Admin --email admin@example.com || true"
+
+  airflow-webserver:
+    <<: *airflow-common
+    command: >
+      bash -c "pip install --no-cache-dir yfinance==0.2.66 scikit-learn==1.7.2 joblib==1.5.2 requests==2.32.4 'cffi<2' 'cloudpickle<=2.2.1' && airflow webserver"
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: >
+      bash -c "pip install --no-cache-dir yfinance==0.2.66 scikit-learn==1.7.2 joblib==1.5.2 requests==2.32.4 'cffi<2' 'cloudpickle<=2.2.1' && airflow scheduler"
+
+  api:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    image: btc-forecast-api:local
+    environment:
+      MODEL_PATH: /app/models/btc_forecast.joblib
+      MODEL_RELOAD_TOKEN: local-development-token
+      LOG_LEVEL: INFO
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./models:/app/models
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  airflow-logs:
+
