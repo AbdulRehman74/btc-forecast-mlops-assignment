@@ -57,7 +57,7 @@ dated USD forecasts. Invalid values produce a structured HTTP 400 response, unav
 produce HTTP 503, and unexpected failures return a non-sensitive HTTP 500 response. A protected
 internal reload endpoint lets Airflow activate an accepted artifact without restarting the API.
 
-Eight unit tests verified health reporting, default and custom predictions, validation failures,
+33 unit tests (94% line coverage) verified health reporting, default and custom predictions, validation failures,
 metric exposure, and degraded behavior. Gunicorn provides the production WSGI process. The
 multi-stage Dockerfile uses `python:3.10-slim`, dependency caching, a numeric non-root user, and an
 explicit health check. The built container reached healthy status and served the trained model on
@@ -74,7 +74,7 @@ The verified scheduled run and the manually triggered run both succeeded. The ma
 in approximately ten seconds after the initial image and dependency setup.
 
 Kubeflow implements equivalent ingestion, feature, and training container components. The pipeline
-compiled successfully into a 9,177-byte YAML specification, allowing the same logical workflow to
+compiled successfully into a 9,872-byte YAML specification, allowing the same logical workflow to
 be submitted to a KFP-compatible environment. GitHub Actions runs Black, Flake8, Pytest with
 coverage, and KFP compilation before container publication. On main-branch pushes, Buildx creates
 both immutable commit-SHA and `latest` tags using registry credentials stored as GitHub Secrets.

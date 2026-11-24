@@ -43,7 +43,8 @@ python -m pip install -r requirements-dev.txt
 python -m src.etl_fetch --period 5y
 python -m src.train_forecast
 pytest --cov=app --cov=src --cov-report=term-missing
-python kubeflow/btc_kfp_pipeline.py
+python kubeflow/btc_kfp_pipeline.py     # compile to YAML
+python kubeflow/run_local.py subprocess  # optional: execute locally (Linux/Docker)
 ```
 
 The final seven observations are held out chronologically. The candidate is registered atomically
