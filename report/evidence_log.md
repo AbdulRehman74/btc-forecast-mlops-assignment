@@ -61,7 +61,4 @@ Verification date: 24 November 2026
 
 ## Screenshot capture status
 
-- Docker Desktop running-container view captured in the conversation.
-- Additional screenshots intentionally deferred until user permission is available.
-- Pending high-value captures: test result, Airflow graph/run, Kubernetes baseline, HPA at eight replicas, self-healing before/after, GitHub Actions, and registry tags.
-
+All eight evidence screenshots (01-08) were captured on 24 November 2026 and are stored locally in `report/evidence/` (excluded from git). Screenshot 02 (Airflow) was re-captured from the live Airflow UI because the original file was an undecodable HEIF image. The self-healing screenshot shows pod 6kzgg replaced by jw68f (ready in 7 s); the earlier recorded run replaced 2vljf with g8v7m in about 14 s. The Locust screenshot shows a run in progress (4,058 requests, 0 failures); the recorded final-run totals above are 3,927 requests with 0.03 percent failures.

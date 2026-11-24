@@ -46,7 +46,7 @@ avoid exposing partially written model files.
 | MAPE | 2.836% |
 | Registration threshold | MAPE ≤ 25% |
 
-**Figure 1 placeholder — Model training output and accepted validation metrics.**
+*Figure 1: Model training output and accepted validation metrics. See the final PDF (`Abdul_Rehman_24L-8010_MLOps_Assignment_3.pdf`) for the verified screenshots.*
 
 ## Flask API and Container Delivery
 
@@ -63,7 +63,7 @@ multi-stage Dockerfile uses `python:3.10-slim`, dependency caching, a numeric no
 explicit health check. The built container reached healthy status and served the trained model on
 port 5000. Docker Compose integrates the API with Airflow, PostgreSQL, and shared model storage.
 
-**Figure 2 placeholder — Passing tests, Docker build, healthy container, and sample seven-day JSON response.**
+*Figure 2: Passing tests, Docker build, healthy container, and sample seven-day JSON response. See the final PDF (`Abdul_Rehman_24L-8010_MLOps_Assignment_3.pdf`) for the verified screenshots.*
 
 ## Automated Orchestration and CI CD
 
@@ -79,7 +79,7 @@ be submitted to a KFP-compatible environment. GitHub Actions runs Black, Flake8,
 coverage, and KFP compilation before container publication. On main-branch pushes, Buildx creates
 both immutable commit-SHA and `latest` tags using registry credentials stored as GitHub Secrets.
 
-**Figure 3 placeholder — Airflow graph with all tasks green and successful GitHub Actions jobs.**
+*Figure 3: Airflow graph with all tasks green and successful GitHub Actions jobs. See the final PDF (`Abdul_Rehman_24L-8010_MLOps_Assignment_3.pdf`) for the verified screenshots.*
 
 ## Kubernetes Deployment and Resilience
 
@@ -106,7 +106,7 @@ requirements: after rollout, HPA may reduce the steady-state count to two.
 | Ingress host | btc-forecast.local |
 | Probes | HTTP `/health` readiness and liveness |
 
-**Figure 4 placeholder — Pods, Services, PVC, HPA, Ingress, and live NodePort prediction.**
+*Figure 4: Pods, Services, PVC, HPA, Ingress, and live NodePort prediction. See the final PDF (`Abdul_Rehman_24L-8010_MLOps_Assignment_3.pdf`) for the verified screenshots.*
 
 ## Load Testing and Self Healing
 
@@ -123,7 +123,7 @@ created replacement pod `btc-forecast-api-77b6685b48-g8v7m`, which was running a
 seconds later. This demonstrates that desired-state reconciliation restores capacity without manual
 intervention.
 
-**Figure 5 placeholder — Locust summary, HPA at eight replicas, and pod replacement evidence.**
+*Figure 5: Locust summary, HPA at eight replicas, and pod replacement evidence. See the final PDF (`Abdul_Rehman_24L-8010_MLOps_Assignment_3.pdf`) for the verified screenshots.*
 
 ## Conclusion
 
