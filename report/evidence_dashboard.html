@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BTC Forecast MLOps - Verified Evidence</title>
+  <style>
+    :root{--bg:#07111f;--panel:#0d1b2d;--line:#25405f;--text:#ecf4ff;--muted:#9fb2c9;--green:#2ed3a2;--blue:#5ea7ff;--amber:#ffc857}
+    *{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at 90% 0,#14335a 0,transparent 36%),var(--bg);color:var(--text);font:15px/1.45 "Segoe UI",Arial,sans-serif}
+    main{max-width:1450px;margin:auto;padding:34px} header{display:flex;justify-content:space-between;align-items:end;margin-bottom:24px}
+    h1{margin:0;font-size:34px;letter-spacing:-.5px} h2{margin:0 0 14px;font-size:18px}.sub{color:var(--muted);margin-top:5px}.badge{border:1px solid #28775f;color:var(--green);padding:8px 13px;border-radius:999px;font-weight:700}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.card{background:linear-gradient(145deg,#10233a,#0a1727);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 12px 30px #0004}.wide{grid-column:span 2}
+    .metric{font-size:29px;font-weight:800;color:var(--green)}.label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:1px} ul{padding-left:19px;margin:7px 0 0}li{margin:5px 0}.ok{color:var(--green);font-weight:700}.blue{color:var(--blue)}.amber{color:var(--amber)}
+    code{font-family:"Cascadia Mono",Consolas,monospace;color:#c8dcff}.bar{height:10px;background:#172b43;border-radius:9px;overflow:hidden;margin-top:9px}.fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--green));width:100%}
+    footer{color:var(--muted);margin-top:18px;text-align:right;font-size:12px}
+  </style>
+</head>
+<body><main>
+  <header><div><h1>Production BTC Forecasting - Verified Evidence</h1><div class="sub">Abdul Rehman | 24L-8010 | 24 November 2026</div></div><div class="badge">END-TO-END VERIFIED</div></header>
+  <section class="grid">
+    <article class="card"><div class="label">Model validation MAPE</div><div class="metric">2.836%</div><div class="sub">Threshold: <= 25%</div></article>
+    <article class="card"><div class="label">Automated tests</div><div class="metric">8 / 8</div><div class="sub">Black + Flake8 clean</div></article>
+    <article class="card"><div class="label">Load-test requests</div><div class="metric">3,927</div><div class="sub">0.03% failure rate</div></article>
+    <article class="card"><div class="label">HPA peak replicas</div><div class="metric">8</div><div class="sub">CPU 252% / target 60%</div></article>
+
+    <article class="card wide"><h2>Kubernetes baseline and autoscaling</h2><ul>
+      <li><span class="ok">PASS</span> Kind cluster: 1 control plane + 2 workers</li>
+      <li><span class="ok">PASS</span> Deployment starts at 3 replicas; HPA range 2-8</li>
+      <li><span class="ok">PASS</span> PVC <code>1Gi</code> mounted at <code>/app/models</code></li>
+      <li><span class="ok">PASS</span> ClusterIP + NodePort <code>30080</code>; Ingress <code>btc-forecast.local</code></li>
+      <li><span class="ok">PASS</span> Resource requests <code>100m / 128Mi</code>; limits <code>500m / 512Mi</code></li>
+    </ul></article>
+    <article class="card wide"><h2>Resilience and operations</h2><ul>
+      <li><span class="ok">SELF-HEAL</span> Deleted pod automatically replaced in ~14 seconds</li>
+      <li><span class="ok">ZERO</span> pod restarts during the successful 100-user load run</li>
+      <li><span class="ok">AIRFLOW</span> scheduled and manual DAG runs succeeded</li>
+      <li><span class="ok">KUBEFLOW</span> compiled pipeline YAML: 9,177 bytes</li>
+      <li><span class="ok">API</span> health, 7-day prediction, metrics and HTTP 400 validation verified</li>
+    </ul></article>
+
+    <article class="card wide"><h2>Load-test result</h2>
+      <div><span class="blue">100 concurrent users</span> - 90 seconds - 43.74 req/s - median 2,000 ms under saturation</div>
+      <div class="bar"><div class="fill"></div></div><div class="sub">HPA reached its configured maximum of 8 replicas while maintaining 99.97% request success.</div>
+    </article>
+    <article class="card wide"><h2>Forecasting quality</h2><ul>
+      <li>1,827 BTC-USD daily observations (2021-11-24 to 2026-11-24)</li>
+      <li>Chronological 7-day holdout; leakage-safe lag, rolling and momentum features</li>
+      <li>MAE <span class="amber">$1,713.49</span> | RMSE <span class="amber">$2,004.38</span></li>
+      <li>Accepted model: <code>btc-hgbr-20261124T135324Z</code></li>
+    </ul></article>
+  </section>
+  <footer>Evidence values reproduced from executed tests, Kubernetes observations, Airflow runs, and Locust results.</footer>
+</main></body></html>
