@@ -12,7 +12,7 @@ PACKAGES = [
 
 
 @dsl.component(base_image="python:3.10-slim", packages_to_install=PACKAGES)
-def ingest_btc_data(output_csv: dsl.OutputPath(str), period: str = "5y") -> int:
+def ingest_btc_data(output_data: dsl.Output[dsl.Dataset], period: str = "5y") -> int:
     import pandas as pd
     import yfinance as yf
 
@@ -22,15 +22,17 @@ def ingest_btc_data(output_csv: dsl.OutputPath(str), period: str = "5y") -> int:
     frame = frame[["Open", "High", "Low", "Close", "Volume"]].dropna()
     if len(frame) < 120:
         raise ValueError("Insufficient market history")
-    frame.to_csv(output_csv, index_label="Date")
+    frame.to_csv(output_data.path, index_label="Date")
     return len(frame)
 
 
 @dsl.component(base_image="python:3.10-slim", packages_to_install=PACKAGES)
-def generate_features(input_csv: dsl.InputPath(str), output_csv: dsl.OutputPath(str)) -> int:
+def generate_features(
+    input_data: dsl.Input[dsl.Dataset], output_data: dsl.Output[dsl.Dataset]
+) -> int:
     import pandas as pd
 
-    data = pd.read_csv(input_csv, parse_dates=["Date"], index_col="Date")
+    data = pd.read_csv(input_data.path, parse_dates=["Date"], index_col="Date")
     close = data["Close"].astype(float)
     for lag in (1, 2, 3, 7, 14, 30):
         data[f"lag_{lag}"] = close.shift(lag)
@@ -40,12 +42,14 @@ def generate_features(input_csv: dsl.InputPath(str), output_csv: dsl.OutputPath(
     data["momentum_7"] = close.shift(1) / close.shift(7) - 1.0
     data["target"] = close
     data = data.dropna()
-    data.to_csv(output_csv)
+    data.to_csv(output_data.path)
     return len(data)
 
 
 @dsl.component(base_image="python:3.10-slim", packages_to_install=PACKAGES)
-def train_model(feature_csv: dsl.InputPath(str), model_artifact: dsl.OutputPath(str)) -> float:
+def train_model(
+    feature_data: dsl.Input[dsl.Dataset], model_artifact: dsl.Output[dsl.Model]
+) -> float:
     import joblib
     import numpy as np
     import pandas as pd
@@ -63,7 +67,7 @@ def train_model(feature_csv: dsl.InputPath(str), model_artifact: dsl.OutputPath(
         "volatility_7",
         "momentum_7",
     ]
-    data = pd.read_csv(feature_csv)
+    data = pd.read_csv(feature_data.path)
     train, validation = data.iloc[:-7], data.iloc[-7:]
     model = HistGradientBoostingRegressor(max_iter=300, random_state=24)
     model.fit(train[columns], train["target"])
@@ -72,15 +76,15 @@ def train_model(feature_csv: dsl.InputPath(str), model_artifact: dsl.OutputPath(
     if mape > 25:
         raise ValueError(f"Model rejected because MAPE {mape:.3f} exceeded 25")
     model.fit(data[columns], data["target"])
-    joblib.dump({"model": model, "feature_columns": columns, "mape": mape}, model_artifact)
+    joblib.dump({"model": model, "feature_columns": columns, "mape": mape}, model_artifact.path)
     return mape
 
 
 @dsl.pipeline(name="btc-seven-day-forecast-training")
 def btc_forecast_pipeline(period: str = "5y"):
     ingest = ingest_btc_data(period=period)
-    features = generate_features(input_csv=ingest.outputs["output_csv"])
-    train = train_model(feature_csv=features.outputs["output_csv"])
+    features = generate_features(input_data=ingest.outputs["output_data"])
+    train = train_model(feature_data=features.outputs["output_data"])
     train.set_cpu_request("500m").set_memory_request("1Gi")
 
 

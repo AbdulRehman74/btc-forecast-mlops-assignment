@@ -6,15 +6,20 @@ components:
   comp-generate-features:
     executorLabel: exec-generate-features
     inputDefinitions:
-      parameters:
-        input_csv:
-          parameterType: STRING
+      artifacts:
+        input_data:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
     outputDefinitions:
+      artifacts:
+        output_data:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
       parameters:
         Output:
           parameterType: NUMBER_INTEGER
-        output_csv:
-          parameterType: STRING
   comp-ingest-btc-data:
     executorLabel: exec-ingest-btc-data
     inputDefinitions:
@@ -24,23 +29,31 @@ components:
           isOptional: true
           parameterType: STRING
     outputDefinitions:
+      artifacts:
+        output_data:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
       parameters:
         Output:
           parameterType: NUMBER_INTEGER
-        output_csv:
-          parameterType: STRING
   comp-train-model:
     executorLabel: exec-train-model
     inputDefinitions:
-      parameters:
-        feature_csv:
-          parameterType: STRING
+      artifacts:
+        feature_data:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
     outputDefinitions:
+      artifacts:
+        model_artifact:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
       parameters:
         Output:
           parameterType: NUMBER_DOUBLE
-        model_artifact:
-          parameterType: STRING
 deploymentSpec:
   executors:
     exec-generate-features:
@@ -71,16 +84,16 @@ deploymentSpec:
 
           '
         - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
-          \ *\n\ndef generate_features(input_csv: dsl.InputPath(str), output_csv:\
-          \ dsl.OutputPath(str)) -> int:\n    import pandas as pd\n\n    data = pd.read_csv(input_csv,\
-          \ parse_dates=[\"Date\"], index_col=\"Date\")\n    close = data[\"Close\"\
-          ].astype(float)\n    for lag in (1, 2, 3, 7, 14, 30):\n        data[f\"\
-          lag_{lag}\"] = close.shift(lag)\n    data[\"ma_7\"] = close.shift(1).rolling(7).mean()\n\
-          \    data[\"ma_30\"] = close.shift(1).rolling(30).mean()\n    data[\"volatility_7\"\
-          ] = close.pct_change().shift(1).rolling(7).std(ddof=0)\n    data[\"momentum_7\"\
-          ] = close.shift(1) / close.shift(7) - 1.0\n    data[\"target\"] = close\n\
-          \    data = data.dropna()\n    data.to_csv(output_csv)\n    return len(data)\n\
-          \n"
+          \ *\n\ndef generate_features(\n    input_data: dsl.Input[dsl.Dataset], output_data:\
+          \ dsl.Output[dsl.Dataset]\n) -> int:\n    import pandas as pd\n\n    data\
+          \ = pd.read_csv(input_data.path, parse_dates=[\"Date\"], index_col=\"Date\"\
+          )\n    close = data[\"Close\"].astype(float)\n    for lag in (1, 2, 3, 7,\
+          \ 14, 30):\n        data[f\"lag_{lag}\"] = close.shift(lag)\n    data[\"\
+          ma_7\"] = close.shift(1).rolling(7).mean()\n    data[\"ma_30\"] = close.shift(1).rolling(30).mean()\n\
+          \    data[\"volatility_7\"] = close.pct_change().shift(1).rolling(7).std(ddof=0)\n\
+          \    data[\"momentum_7\"] = close.shift(1) / close.shift(7) - 1.0\n    data[\"\
+          target\"] = close\n    data = data.dropna()\n    data.to_csv(output_data.path)\n\
+          \    return len(data)\n\n"
         image: python:3.10-slim
     exec-ingest-btc-data:
       container:
@@ -110,14 +123,15 @@ deploymentSpec:
 
           '
         - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
-          \ *\n\ndef ingest_btc_data(output_csv: dsl.OutputPath(str), period: str\
-          \ = \"5y\") -> int:\n    import pandas as pd\n    import yfinance as yf\n\
-          \n    frame = yf.download(\"BTC-USD\", period=period, interval=\"1d\", progress=False)\n\
-          \    if isinstance(frame.columns, pd.MultiIndex):\n        frame.columns\
-          \ = frame.columns.get_level_values(0)\n    frame = frame[[\"Open\", \"High\"\
-          , \"Low\", \"Close\", \"Volume\"]].dropna()\n    if len(frame) < 120:\n\
-          \        raise ValueError(\"Insufficient market history\")\n    frame.to_csv(output_csv,\
-          \ index_label=\"Date\")\n    return len(frame)\n\n"
+          \ *\n\ndef ingest_btc_data(output_data: dsl.Output[dsl.Dataset], period:\
+          \ str = \"5y\") -> int:\n    import pandas as pd\n    import yfinance as\
+          \ yf\n\n    frame = yf.download(\"BTC-USD\", period=period, interval=\"\
+          1d\", progress=False)\n    if isinstance(frame.columns, pd.MultiIndex):\n\
+          \        frame.columns = frame.columns.get_level_values(0)\n    frame =\
+          \ frame[[\"Open\", \"High\", \"Low\", \"Close\", \"Volume\"]].dropna()\n\
+          \    if len(frame) < 120:\n        raise ValueError(\"Insufficient market\
+          \ history\")\n    frame.to_csv(output_data.path, index_label=\"Date\")\n\
+          \    return len(frame)\n\n"
         image: python:3.10-slim
     exec-train-model:
       container:
@@ -147,20 +161,20 @@ deploymentSpec:
 
           '
         - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
-          \ *\n\ndef train_model(feature_csv: dsl.InputPath(str), model_artifact:\
-          \ dsl.OutputPath(str)) -> float:\n    import joblib\n    import numpy as\
-          \ np\n    import pandas as pd\n    from sklearn.ensemble import HistGradientBoostingRegressor\n\
+          \ *\n\ndef train_model(\n    feature_data: dsl.Input[dsl.Dataset], model_artifact:\
+          \ dsl.Output[dsl.Model]\n) -> float:\n    import joblib\n    import numpy\
+          \ as np\n    import pandas as pd\n    from sklearn.ensemble import HistGradientBoostingRegressor\n\
           \n    columns = [\n        \"lag_1\",\n        \"lag_2\",\n        \"lag_3\"\
           ,\n        \"lag_7\",\n        \"lag_14\",\n        \"lag_30\",\n      \
           \  \"ma_7\",\n        \"ma_30\",\n        \"volatility_7\",\n        \"\
-          momentum_7\",\n    ]\n    data = pd.read_csv(feature_csv)\n    train, validation\
-          \ = data.iloc[:-7], data.iloc[-7:]\n    model = HistGradientBoostingRegressor(max_iter=300,\
+          momentum_7\",\n    ]\n    data = pd.read_csv(feature_data.path)\n    train,\
+          \ validation = data.iloc[:-7], data.iloc[-7:]\n    model = HistGradientBoostingRegressor(max_iter=300,\
           \ random_state=24)\n    model.fit(train[columns], train[\"target\"])\n \
           \   predicted = model.predict(validation[columns])\n    mape = float(np.mean(np.abs((validation[\"\
           target\"] - predicted) / validation[\"target\"])) * 100)\n    if mape >\
           \ 25:\n        raise ValueError(f\"Model rejected because MAPE {mape:.3f}\
           \ exceeded 25\")\n    model.fit(data[columns], data[\"target\"])\n    joblib.dump({\"\
-          model\": model, \"feature_columns\": columns, \"mape\": mape}, model_artifact)\n\
+          model\": model, \"feature_columns\": columns, \"mape\": mape}, model_artifact.path)\n\
           \    return mape\n\n"
         image: python:3.10-slim
         resources:
@@ -181,10 +195,10 @@ root:
         dependentTasks:
         - ingest-btc-data
         inputs:
-          parameters:
-            input_csv:
-              taskOutputParameter:
-                outputParameterKey: output_csv
+          artifacts:
+            input_data:
+              taskOutputArtifact:
+                outputArtifactKey: output_data
                 producerTask: ingest-btc-data
         taskInfo:
           name: generate-features
@@ -207,10 +221,10 @@ root:
         dependentTasks:
         - generate-features
         inputs:
-          parameters:
-            feature_csv:
-              taskOutputParameter:
-                outputParameterKey: output_csv
+          artifacts:
+            feature_data:
+              taskOutputArtifact:
+                outputArtifactKey: output_data
                 producerTask: generate-features
         taskInfo:
           name: train-model
